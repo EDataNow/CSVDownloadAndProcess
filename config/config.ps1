@@ -1,5 +1,6 @@
-﻿$user= Import-CSV .\credentials\*.csv
+﻿$ErrorActionPreference = "Stop"
+$user= Import-CSV .\credentials\*.csv
 $bucket="edn-production"
-$server="service.edatanow.com"
+$serverList="service.edatanow.com"
 $language="en"
 $region="us-east-1"

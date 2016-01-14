@@ -1,9 +1,17 @@
-﻿  
+﻿function Check-AWSPresence {
+    try {
+        Get-AWSRegion *>$null
+    }
+    catch {
+        $status = (new-object -com wscript.shell).run("https://aws.amazon.com/powershell/",3); Write-Host "These scripts require AWSPowerShell. Please visit https://aws.amazon.com/powershell/ to download the latest version. Install, reboot, and try again." -ForegroundColor Red; Break
+    }
+}# ensure AWS is installed
+
 function Check-Incoming {
     Get-ChildItem .\servers\$($server)\Incoming\ | ForEach {
         if (Test-Path -Path ".\servers\$($server)\Incoming\$($_.Name)\*"){
             Write-Warning "Unrecognized File in Incoming folder."
-            Remove-Item ".\servers\$($server)\Incoming\$($_.Name)\*"     
+            #Remove-Item ".\servers\$($server)\Incoming\$($_.Name)\*"     
         }
     } 
 }# check Incoming folder for old files, raise warning
@@ -36,7 +44,12 @@ function Process-NewFiles {
     ForEach ($file in (Get-ChildItem ".\servers\$($server)\Incoming\*" -Recurse) ){
         $currentFilePath = (($file.DirectoryName, "\", $file.Name) -join '')
         $newFilePath = (".\servers\$($server)\Processed\", ($file.DirectoryName | Split-Path -leaf), "\") -join ''
+        try {
         Invoke-Expression (".\custom_processor.ps1 -csvpath {0} -language {1} -remoteServer {2}" -f $currentFilePath,$language,$server)
+        }
+        catch {
+        "$(Get-Date): " | Out-File ".\logs\errorLog.log" -append
+        }
         Move-Item $file $newFilePath -Force 
     }
 } # Process files, move to new location
