@@ -5,4 +5,4 @@ param([string]$csvpath, [string]$remoteServer, [string]$language)
 
 $processor = ".\bin\Win32ConsoleApplication.exe"
 
-&$processor $csvpath $remoteServer $language -ErrorAction Stop
+&$processor $csvpath $remoteServer $language

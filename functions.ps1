@@ -10,7 +10,7 @@
 function Check-Incoming {
     Get-ChildItem .\servers\$($server)\Incoming\ | ForEach {
         if (Test-Path -Path ".\servers\$($server)\Incoming\$($_.Name)\*"){
-            Write-Warning "Incoming folder contains unprocessed or unrecognized files."
+            Write-Warning "Incoming\$($_.Name)\ contains unprocessed or unrecognized files."
             #Remove-Item ".\servers\$($server)\Incoming\$($_.Name)\*"     
         }
     } 
@@ -40,37 +40,20 @@ function Download-NewFiles {
     }
 } # download missing files from remoteCollection
 
-function Process-NewFiles {
-    ForEach ($file in (Get-ChildItem ".\servers\$($server)\Incoming\*" -Recurse) ){
-        $currentFilePath = (($file.DirectoryName, "\", $file.Name) -join '')
-        $newFilePath = (".\servers\$($server)\Processed\", ($file.DirectoryName | Split-Path -leaf), "\") -join ''
-         try {
-            $Exp = ".\custom_processor.ps1 -csvpath {0} -language {1} -remoteServer {2}" -f $currentFilePath,$language,$server
-            $err = (Invoke-Expression $Exp) 2>&1
-            if ($lastexitcode) {throw $err}
-        }
-        catch {
-            Write-Host "Exception" -ForegroundColor Red
-            "Exception: [$($err)] thrown at $(Get-Date)." | Out-File ".\logs\errorLog.log" -append
-            Break
-        }
-        Move-Item $file $newFilePath -Force 
-    }
-} # Process files, move to new location
 
-<#
 function Process-NewFiles {
     $Exp = ".\custom_processor.ps1"
-    ForEach ($file in (Get-ChildItem ".\servers\$($server)\Incoming\*" -Recurse) ){
+    $rollUp = Get-ChildItem ".\servers\$($server)\Incoming\*" -Recurse | Sort-Object $file.Name
+    ForEach ($file in $rollUp){
         $currentFilePath = (($file.DirectoryName, "\", $file.Name) -join '')
         $newFilePath = (".\servers\$($server)\Processed\", ($file.DirectoryName | Split-Path -leaf), "\") -join ''
         try {
-            $err = &$Exp $currentFilePath $language $server
-            if ($lastexitcode) {throw $err}
+            $err = &$Exp $currentFilePath $language $server 2>&1
+            if ($LASTEXITCODE -ne 0) {throw $err}
         }
         catch {
-            Write-Host "Exception" -ForegroundColor Red
-            "Exception: [$($err)] thrown at $(Get-Date)." | Out-File ".\logs\errorLog.log" -append
+            Write-Host "Error processing $($file.Name)." -ForegroundColor Red
+            "$(Get-Date): Could not process $($file.Name)." | Out-File ".\logs\errorLog.log" -append
             Break
         }
         Move-Item $file $newFilePath -Force 
