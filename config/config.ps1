@@ -11,8 +11,8 @@ $failurePath=".\bin\Failure.exe"
 $finishPath=".\bin\Finish.exe"
 
 #Email for failure_hook
-$From = "YourEmail@gmail.com"
-$To = "AnotherEmail@YourDomain.com"
+$From = "user@domain.com"
+$To = "dapr.noreply@gmail.com"
 $Cc = "YourBoss@YourDomain.com"
 $Subject = "Email Subject"
 $Body = "Insert body text here"

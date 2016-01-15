@@ -8,8 +8,8 @@ $fileName = $csvpath | Split-Path -leaf
 $errorInfo | Out-File ".\logs\$($fileName).log"
 $Attachment = ".\logs\$($fileName).log"
 
-# Send-MailMessage -From $From -to $To -Cc $Cc -Subject $Subject `
-# -Body $Body -Attachments $Attachment -SmtpServer $SMTPServer  `
-# -port $SMTPPort -UseSsl -Credential (Get-Credential) 
+Send-MailMessage -From $From -to $To -Cc $Cc -Subject $Subject `
+-Body $Body -Attachments $Attachment -SmtpServer $SMTPServer  `
+-port $SMTPPort -UseSsl -Credential (Get-Credential) 
 
 # &$failurePath $csvpath $errorInfo $failTime
