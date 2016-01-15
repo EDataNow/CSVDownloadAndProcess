@@ -1,4 +1,4 @@
-﻿#requires -version 5
+﻿#requires -version 3
 . ./config/config.ps1
 . ./functions.ps1
 

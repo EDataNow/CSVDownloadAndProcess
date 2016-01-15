@@ -1,4 +1,4 @@
-﻿#requires -version 5
+﻿#requires -version 3
 param([string]$csvpath, [string]$errorInfo, [DateTime]$failTime)
 
 $fileName = $csvpath | Split-Path -leaf

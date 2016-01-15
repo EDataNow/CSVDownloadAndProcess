@@ -2,7 +2,7 @@
 This is a simple PowerShell script designed to download and process .csv files from Amazon S3. Downloaded files can be passed through a custom processing tool.
 
 Requirements:
-- PowerShell v5 or higher
+- PowerShell v3 or higher
 - AWS Tool for Windows PowerShell [(download)](http://aws.amazon.com/powershell/)
 
 Once you have downloaded this package, there are a few steps to get set up. 
