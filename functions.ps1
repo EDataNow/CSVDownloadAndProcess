@@ -3,7 +3,10 @@
         Get-AWSRegion *>$null
     }
     catch {
-        $status = (new-object -com wscript.shell).run("https://aws.amazon.com/powershell/",3); Write-Host "These scripts require AWSPowerShell. Please visit https://aws.amazon.com/powershell/ to download the latest version. Install, reboot, and try again." -ForegroundColor Red; Break
+        $status = (new-object -com wscript.shell).run("https://aws.amazon.com/powershell/",3)
+        Write-Host "These scripts require AWSPowerShell." -ForegroundColor Red
+        Write-Host "Please visit https://aws.amazon.com/powershell/ to download the latest version. Install, reboot, and try again." -ForegroundColor Red
+        Break
     }
 }# ensure AWS is installed
 
@@ -32,7 +35,8 @@ function Download-NewFiles {
 	    $localFileName = $object.Key -replace $keyPrefix, ''
 	    if ( ($localFileName -ne '') -and (($localCollection | Split-Path -leaf) -notcontains ($object.Key | Split-Path -leaf) ) ) {
             $localFilePath = Join-Path ".\servers\$($server)\Incoming\" $localFileName
-		    Copy-S3Object -BucketName $bucket -Key $object.Key -LocalFile $localFilePath -AccessKey $user.'Access Key Id' -SecretKey $user.'Secret Access Key' -Region $region
+		    Copy-S3Object -BucketName $bucket -Key $object.Key -LocalFile $localFilePath `
+            -AccessKey $user.'Access Key Id' -SecretKey $user.'Secret Access Key' -Region $region
 	    }
         else{
             Write-Verbose "File already downloaded: $($object.Key | Split-Path -leaf)" #-ForegroundColor Cyan
@@ -42,21 +46,22 @@ function Download-NewFiles {
 
 
 function Process-NewFiles {
-    $Exp = ".\custom_processor.ps1"
+    $processHook = ".\processor_hook.ps1"
+    $failureHook = ".\failure_hook.ps1"
+    $finishHook = ".\finish_hook.ps1"
     $rollUp = Get-ChildItem ".\servers\$($server)\Incoming\*" -Recurse | Sort-Object $file.Name
     ForEach ($file in $rollUp){
         $currentFilePath = (($file.DirectoryName, "\", $file.Name) -join '')
         $newFilePath = (".\servers\$($server)\Processed\", ($file.DirectoryName | Split-Path -leaf), "\") -join ''
         try {
-            $err = &$Exp $currentFilePath $language $server 2>&1
+            $err = &$processHook $currentFilePath $server $language 2>&1
             if ($LASTEXITCODE -ne 0) {throw $err}
         }
         catch {
-            Write-Host "Error processing $($file.Name)." -ForegroundColor Red
-            "$(Get-Date): Could not process $($file.Name)." | Out-File ".\logs\errorLog.log" -append
+            &$failureHook $currentFilePath $err (Get-Date)
             Break
         }
         Move-Item $file $newFilePath -Force 
     }
+    &$finishHook (Get-Date)
 } # Process files, move to new location
-#>
