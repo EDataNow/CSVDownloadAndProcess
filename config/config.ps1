@@ -7,8 +7,10 @@ $region="us-east-1"
 $serverList="service.edatanow.com" #separate desired servers with a comma
 $language="en"
 $processPath=".\bin\Process.exe"
-$failurePath=".\bin\Failure.exe" 
+$failurePath=".\bin\Failure.exe"
+$useFailureHook="False" 
 $finishPath=".\bin\Finish.exe"
+$useFinishHook="False"
 
 #Email for failure_hook
 $From = "user@domain.com"

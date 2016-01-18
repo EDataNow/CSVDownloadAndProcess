@@ -3,4 +3,6 @@ param([DateTime]$timeFinished)
 
 # Modify the code below to suit your needs
 
-# &$finishPath $timeFinished
+if ($useFinishHook){
+    &$finishPath $timeFinished
+}

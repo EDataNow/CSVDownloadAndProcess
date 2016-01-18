@@ -12,4 +12,6 @@ Send-MailMessage -From $From -to $To -Cc $Cc -Subject $Subject `
 -Body $Body -Attachments $Attachment -SmtpServer $SMTPServer  `
 -port $SMTPPort -UseSsl -Credential (Get-Credential) 
 
-# &$failurePath $csvpath $errorInfo $failTime
+if ($useFailureHook){ 
+    &$failurePath $csvpath $errorInfo $failTime
+}
