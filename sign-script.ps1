@@ -11,7 +11,13 @@ $options = [System.Management.Automation.Host.ChoiceDescription[]]($yes, $no)
 
 
 function Make-Cert {
-    makecert -n "CN=PowerShell Local Certificate Root" -a sha1 -eku 1.3.6.1.5.5.7.3.3 -r -sv root.pvk root.cer -ss Root -sr localMachine
+    try {
+    makecert -n "CN=PowerShell Local Certificate Root" -a sha1 -eku 1.3.6.1.5.5.7.3.3 -r -sv root.pvk root.cer -ss Root -sr localMachine -ErrorAction Stop
+    }
+    catch {
+    Write-Host "Please ensure your system has makecert.exe installed and try again."
+    Exit
+    }
     makecert -pe -n "CN=PowerShell User" -ss MY -a sha1 -eku 1.3.6.1.5.5.7.3.3 -iv root.pvk -ic root.cer
     Get-ChildItem cert:\CurrentUser\My -codesign
     Remove-Item ".\root.pvk"

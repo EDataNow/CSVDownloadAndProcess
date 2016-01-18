@@ -5,16 +5,16 @@ Requirements:
 - PowerShell v3 or higher
 - AWS Tool for Windows PowerShell [(download)](http://aws.amazon.com/powershell/)
 
-Once you have downloaded this package, there are a few steps to get set up:
-1. Run PowerShell as an administrator and navigate to the CSVDownloadAndProcess folder  
-2. Set the execution policy with the **Set-ExecutionPolicy AllSigned** command
-    - Restricted - This is the default value, and prevents all scripts from being run. CSVDownloadAndProcess will not run with this setting.
+Once you have downloaded this package, there are a few steps to get set up:   
+- Run PowerShell as an administrator and navigate to the CSVDownloadAndProcess folder     
+- Set the execution policy with the **Set-ExecutionPolicy AllSigned** command   
+    - Restricted - This is the default value, and prevents all scripts from being run.   CSVDownloadAndProcess will not run with this setting.   
     - RemoteSigned - Prevents unsigned scripts from being run unless they were created locally.
-    - AllSigned (Recommended) - Prevents all unsigned scripts from being run.
-    - Unrestricted - Allows any script to be run regardless of source, including potentially malicious code.  
-3. Use makecert.exe to sign all scripts to be run [(guide)](http://www.hanselman.com/blog/SigningPowerShellScripts.aspx).
-    - I have provided a pre-signed script titled sign-script.ps1 that you can run to easily sign your scripts, using the command **powershell.exe -file .\sign-scripts.ps1** followed by the path to the script to be signed. Use this script on *sign-defaults.ps1* and then run *sign-defaults.ps1* with **powershell.exe -file .\sign-defaults**  
-4. Open config/config.ps1 and replace the sample fields with your information.  
+    - AllSigned (Recommended) - Prevents all unsigned scripts from being run.   
+    - Unrestricted - Allows any script to be run regardless of source, including potentially malicious code. 
+- Use makecert.exe to sign all scripts to be run     [(guide)](http://www.hanselman.com/blog/SigningPowerShellScripts.aspx).
+    - I have provided a pre-signed script titled sign-script.ps1 that you can run to easily sign your scripts, using the command **powershell.exe -file .\sign-scripts.ps1** followed by the path to the script to be signed. Use this script on *sign-defaults.ps1* and then run *sign-defaults.ps1* with **powershell.exe -file .\sign-defaults**   
+- Open config/config.ps1 and replace the sample fields with your information.  
     - serverList - servers you wish to pull .scv files from, separated by a comma
     - language - language to display .csv files in
     - reportEmail - email to receive failure notifications
