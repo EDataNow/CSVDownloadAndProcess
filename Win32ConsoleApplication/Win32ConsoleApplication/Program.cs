@@ -47,7 +47,7 @@ namespace Win32ConsoleApplication
                               "Processing...... \n", fullPathToFile, server, languageShortName);
 
             //Put your processing code here.  
-            throw new Exception();                          
+            //throw new Exception();                         
         }
 
         static private bool IsFilePathValid(string fullPathToFile)

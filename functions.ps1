@@ -11,31 +11,32 @@
 }# ensure AWS is installed
 
 function Check-Incoming {
-    Get-ChildItem .\servers\$($server)\Incoming\ | ForEach {
-        if (Test-Path -Path ".\servers\$($server)\Incoming\$($_.Name)\*"){
+    Get-ChildItem .\servers\$($Server)\Incoming\ | ForEach {
+        if (Test-Path -Path ".\servers\$($Server)\Incoming\$($_.Name)\*"){
             Write-Warning "Incoming\$($_.Name)\ contains unprocessed or unrecognized files."
-            #Remove-Item ".\servers\$($server)\Incoming\$($_.Name)\*"     
+            #Remove-Item ".\servers\$($Server)\Incoming\$($_.Name)\*"     
         }
     } 
 }# check Incoming folder for old files, raise warning
 
 function Recreate-Folders {
     ForEach ($folder in (Split-Path (Split-Path $remoteCollection.Key -Parent) -Leaf | Sort-Object | Get-Unique)){
-        if ( -Not (Test-Path -Path ".\servers\$($server)\Processed\$($folder)\")){
-            New-Item .\servers\$($server)\Processed\$($folder) -ItemType Directory 
+        if ( -Not (Test-Path -Path ".\servers\$($Server)\Processed\$($folder)\")){
+            New-Item .\servers\$($Server)\Processed\$($folder) -ItemType Directory 
         }
-        if ( -Not (Test-Path -Path ".\servers\$($server)\Incoming\$($folder)\")){
-            New-Item .\servers\$($server)\Incoming\$($folder) -ItemType Directory 
+        if ( -Not (Test-Path -Path ".\servers\$($Server)\Incoming\$($folder)\")){
+            New-Item .\servers\$($Server)\Incoming\$($folder) -ItemType Directory 
         }
     }
 } # recreate  folders if absent
 
 function Download-NewFiles {
-    ForEach ($object in $remoteCollection) {
+    $fileList = $LocalCollection | Split-Path -leaf -ErrorAction SilentlyContinue
+    ForEach ($object in $RemoteCollection) {
 	    $localFileName = $object.Key -replace $keyPrefix, ''
-	    if ( ($localFileName -ne '') -and (($localCollection | Split-Path -leaf) -notcontains ($object.Key | Split-Path -leaf) ) ) {
-            $localFilePath = Join-Path ".\servers\$($server)\Incoming\" $localFileName
-		    Copy-S3Object -BucketName $bucket -Key $object.Key -LocalFile $localFilePath `
+	    if ( ($localFileName -ne '') -and ($fileList -notcontains ($object.Key | Split-Path -leaf) ) ) {
+            $localFilePath = Join-Path ".\servers\$($Server)\Incoming\" $localFileName
+		    Copy-S3Object -BucketName $Bucket -Key $Object.Key -LocalFile $localFilePath `
             -AccessKey $user.'Access Key Id' -SecretKey $user.'Secret Access Key' -Region $region
 	    }
         else{
@@ -46,21 +47,23 @@ function Download-NewFiles {
 
 
 function Process-NewFiles {
-    $processHook = ".\processor_hook.ps1"
-    $failureHook = ".\failure_hook.ps1"
-    $finishHook = ".\finish_hook.ps1"
-    $rollUp = Get-ChildItem ".\servers\$($server)\Incoming\*" -Recurse | Sort-Object $file.Name
+    $processHook = ".\Hook-Process.ps1"
+    $failureHook = ".\Hook-Failure.ps1"
+    $finishHook = ".\Hook-Finish.ps1"
+    $rollUp = Get-ChildItem ".\servers\$($Server)\Incoming\*" -Recurse | Sort-Object Name
     ForEach ($file in $rollUp){
         $currentFilePath = (($file.DirectoryName, "\", $file.Name) -join '')
-        $newFilePath = (".\servers\$($server)\Processed\", ($file.DirectoryName | Split-Path -leaf), "\") -join ''
+        $newFilePath = (".\servers\$($Server)\Processed\", ($file.DirectoryName | Split-Path -leaf), "\") -join ''
         try {
-            $err = &$processHook $currentFilePath $server $language 2>&1
+            $applicationResult = &$processHook $currentFilePath $Server $Language 2>&1
             if ($LASTEXITCODE -ne 0) {throw $err}
         }
         catch {
+            Write-Error "Error while processing file $($file.Name)"
             &$failureHook $currentFilePath $err (Get-Date)
             Break
         }
+        $applicationResult
         Move-Item $file $newFilePath -Force 
     }
     &$finishHook (Get-Date)

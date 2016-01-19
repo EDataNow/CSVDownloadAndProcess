@@ -1,13 +1,13 @@
 ﻿#requires -version 3
-param([string]$scriptToSign)
+param([string]$ScriptToSign)
 
-$cert = Get-ChildItem cert:\CurrentUser\My -codesign
+$Cert = Get-ChildItem cert:\CurrentUser\My -codesign
 
-$title = "Certificate Setup"
-$message = "It appears you do not have a valid certificate. Would you like to create one now? `n (Note: You will be prompted to enter a password multiple times. This is normal.)"
-$yes = New-Object System.Management.Automation.Host.ChoiceDescription "&Yes", "Begins makecert setup."
-$no = New-Object System.Management.Automation.Host.ChoiceDescription "&No", "Cancel"
-$options = [System.Management.Automation.Host.ChoiceDescription[]]($yes, $no)
+$Title = "Certificate Setup"
+$Message = "It appears you do not have a valid certificate. Would you like to create one now? `n (Note: You will be prompted to enter a password multiple times. This is normal.)"
+$Yes = New-Object System.Management.Automation.Host.ChoiceDescription "&Yes", "Begins makecert setup."
+$No = New-Object System.Management.Automation.Host.ChoiceDescription "&No", "Cancel"
+$Options = [System.Management.Automation.Host.ChoiceDescription[]]($Yes, $No)
 
 
 function Make-Cert {
@@ -25,8 +25,8 @@ function Make-Cert {
 }
 
 function Check-and-Prompt{
-    if ($cert -eq $null){
-        $result = $host.ui.PromptForChoice($title, $message, $options, 1) 
+    if ($Cert -eq $Null){
+        $result = $Host.ui.PromptForChoice($Title, $Message, $Options, 1) 
         switch ($result)
         {
             0 {
@@ -40,9 +40,9 @@ function Check-and-Prompt{
     }
 }
 
-if (Test-Path -Path $scriptToSign) {
+if (Test-Path -Path $ScriptToSign) {
     Check-and-Prompt
-    try { Set-AuthenticodeSignature $scriptToSign @(Get-ChildItem cert:\CurrentUser\My -codesign)[0] -ErrorAction Stop }
+    try { Set-AuthenticodeSignature $ScriptToSign @(Get-ChildItem cert:\CurrentUser\My -codesign)[0] -ErrorAction Stop }
     catch { 
     Write-Host "Your script has not been signed." -ForegroundColor Red
     Break 
@@ -50,7 +50,7 @@ if (Test-Path -Path $scriptToSign) {
     Write "Script was signed successfully."
 }
 else{
-    Write-Host "Could not find script $($scriptToSign). Please check the path and try again." -ForegroundColor Red  
+    Write-Host "Could not find script $($ScriptToSign). Please check the path and try again." -ForegroundColor Red  
 }
 
 

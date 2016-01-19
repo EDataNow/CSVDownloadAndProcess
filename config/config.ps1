@@ -1,16 +1,16 @@
 ﻿$ErrorActionPreference = "Stop"
-$user= Import-CSV .\credentials\*.csv
-$bucket="edn-production"
-$region="us-east-1"
+$User= Import-CSV .\credentials\*.csv
+$Bucket="edn-production"
+$Region="us-east-1"
 
 # replace the sample fields in the below information with the correct values
-$serverList="service.edatanow.com" #separate desired servers with a comma
-$language="en"
-$processPath=".\bin\Process.exe"
-$failurePath=".\bin\Failure.exe"
-$useFailureHook="False" 
-$finishPath=".\bin\Finish.exe"
-$useFinishHook="False"
+$ServerList="service.edatanow.com" #separate desired servers with a comma
+$Language="en"
+$ProcessPath=".\bin\Win32ConsoleApplication.exe"
+$FailurePath=".\bin\Failure.exe"
+$UseFailureHook=0
+$FinishPath=".\bin\Finish.exe"
+$UseFinishHook=0
 
 #Email for failure_hook
 $From = "user@domain.com"
