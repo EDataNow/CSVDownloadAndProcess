@@ -59,7 +59,7 @@ function Process-NewFiles {
             if ($LASTEXITCODE -ne 0) {throw $err}
         }
         catch {
-            Write-Error "Error while processing file $($file.Name)"
+            Write-Error "Error while processing file $($file.Name)" -ErrorAction Continue
             &$failureHook $currentFilePath $err (Get-Date)
             Break
         }
