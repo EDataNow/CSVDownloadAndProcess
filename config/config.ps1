@@ -20,9 +20,9 @@ $UseFinishHook=0
 $FinishEmail=0
 
 #Email for failure_hook and finish_hook
-$To = "joshua@phoenixquality.com"
-$From="dapr.noreply@gmail.com"
-$Cc = "Scott.Kanouse@spartanmotors.com"
+$To = "recipient@email.com"
+$From="reportsource@email.com"
+$Cc = "CCTarget@email.com"
 $FailSubject = "Email Subject"
 $FinishSubject = "Email Subject"
 $FailBody = "Insert Failure body text here"
