@@ -1,6 +1,5 @@
 ﻿$ErrorActionPreference = "Stop"
 $User= Import-CSV .\credentials\*.csv
-$Bucket="edn-production"
 $Region="us-east-1"
 
 if (-Not (Test-Path -Path ".\credentials\ReportingEmail.txt")){
@@ -9,7 +8,7 @@ if (-Not (Test-Path -Path ".\credentials\ReportingEmail.txt")){
 }
 
 # replace the sample fields in the below information with the correct values
-$ServerList="service.edatanow.com" #separate desired servers with a comma
+$ServerList="service-uat.edatanow.com" #separate desired servers with a comma
 $Language="en"
 $ProcessPath=".\bin\Win32ConsoleApplication.exe"
 $FailurePath=".\bin\Failure.exe"

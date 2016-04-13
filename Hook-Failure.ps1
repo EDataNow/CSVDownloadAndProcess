@@ -10,8 +10,7 @@ if ($FailureEmail){
     $attachment = ".\logs\$($fileName).log"
     Send-MailMessage -From $From -to $To -Cc $Cc -Subject $FailSubject `
         -Body $FailBody -Attachments $attachment -SmtpServer $SMTPServer  `
-        -port $SMTPPort -UseSsl -Credential $EmailSender
-        
+        -port $SMTPPort -UseSsl -Credential $EmailSender 
 }
 
 if ($UseFailureHook){

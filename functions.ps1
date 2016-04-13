@@ -31,6 +31,7 @@ function Recreate-Folders {
 } # recreate  folders if absent
 
 function Download-NewFiles {
+    param([string]$Bucket)
     $fileList = $LocalCollection | Split-Path -leaf -ErrorAction SilentlyContinue
     ForEach ($object in $RemoteCollection) {
 	    $localFileName = $object.Key -replace $keyPrefix, ''
