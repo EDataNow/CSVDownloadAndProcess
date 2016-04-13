@@ -8,7 +8,7 @@ if (-Not (Test-Path -Path ".\credentials\ReportingEmail.txt")){
 }
 
 # replace the sample fields in the below information with the correct values
-$ServerList="service-uat.edatanow.com" #separate desired servers with a comma
+$ServerList="service.edatanow.com" #separate desired servers with a comma
 $Language="en"
 $ProcessPath=".\bin\Win32ConsoleApplication.exe"
 $FailurePath=".\bin\Failure.exe"
