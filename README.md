@@ -82,3 +82,9 @@ There are three points of interaction available: process, failure, and finish. E
 - Use makecert.exe to sign all scripts to be run     [(guide)](http://www.hanselman.com/blog/SigningPowerShellScripts.aspx).
     -  Pre-signed script titled *Sign-Script.ps1* can be used to sign your scripts, using the command **powershell.exe -file .\Sign-Scripts.ps1** followed by the path to the script to be signed. Use this script on *Sign-DefaultScripts.ps1* and then run *Sign-DefaultScripts.ps1* with **powershell.exe -file .\Sign-DefaultScripts**
 
+## Changelog
+- 13.Apr.2016: **S3 Folder Structure Changes**
+	- Bucket is now customer specific; determined by credentials file
+	- Paths modified to match new structure
+	- No functional changes to any scripts/config
+
