@@ -27,6 +27,9 @@ function Recreate-Folders {
         if ( -Not (Test-Path -Path ".\servers\$($Server)\Incoming\$($folder)\")){
             New-Item .\servers\$($Server)\Incoming\$($folder) -ItemType Directory 
         }
+        if ( -Not (Test-Path -Path "$($OneDriveLocation)\$($Server)\")){
+            New-Item "$($OneDriveLocation)\$($Server)" -ItemType Directory 
+        }
     }
 } # recreate  folders if absent
 

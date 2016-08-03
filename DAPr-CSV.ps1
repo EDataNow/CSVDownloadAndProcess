@@ -15,7 +15,6 @@ foreach ($Server in $ServerList){
 
     Download-NewFiles -Bucket $Bucket
     Process-NewFiles
-    
 }
 
-Write-Host "Operation completed at $(Get-Date)." -ForegroundColor Cyan  
+Write-Host "Operation completed at $(Get-Date)." -ForegroundColor Cyan
