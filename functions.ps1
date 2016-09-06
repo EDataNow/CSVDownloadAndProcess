@@ -27,9 +27,6 @@ function Recreate-Folders {
         if ( -Not (Test-Path -Path ".\servers\$($Server)\Incoming\$($folder)\")){
             New-Item .\servers\$($Server)\Incoming\$($folder) -ItemType Directory 
         }
-        if ( -Not (Test-Path -Path "$($OneDriveLocation)\$($Server)\")){
-            New-Item "$($OneDriveLocation)\$($Server)" -ItemType Directory 
-        }
     }
 } # recreate  folders if absent
 
@@ -40,7 +37,7 @@ function Download-NewFiles {
 	    $localFileName = $object.Key -replace $keyPrefix, ''
 	    if ( ($localFileName -ne '') -and ($fileList -notcontains ($object.Key | Split-Path -leaf) ) ) {
             $localFilePath = Join-Path ".\servers\$($Server)\Incoming\" $localFileName
-		    Copy-S3Object -BucketName $Bucket -Key $Object.Key -LocalFile $localFilePath `
+		    Copy-S3Object -BucketName $Bucket -Key $object.Key -LocalFile $localFilePath `
             -AccessKey $user.'Access Key Id' -SecretKey $user.'Secret Access Key' -Region $region
 	    }
         else{

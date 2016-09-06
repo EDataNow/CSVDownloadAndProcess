@@ -1,4 +1,5 @@
 /bin/
+/config/
 *.DS_Store
 *.exe
 *.log

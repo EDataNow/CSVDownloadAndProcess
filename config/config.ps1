@@ -8,14 +8,15 @@ if (-Not (Test-Path -Path ".\credentials\ReportingEmail.txt")){
 }
 
 # replace the sample fields in the below information with the correct values
-$ServerList="service-uat.edatanow.com" #separate desired servers with a comma
+$ServerList="service.edatanow.com" #separate desired servers with a comma
 $Language="en"
-$ProcessPath=".\Store-CSV.ps1"
+#$ProcessPath=".\Store-CSV.ps1"
+$ProcessPath=".\bin\Win32ConsoleApplication.exe"
 $FailurePath=".\bin\Failure.exe"
 $UseFailureHook=0
 $FailureEmail=0
 $FinishPath=".\Upload-CSV.ps1"
-$UseFinishHook=1
+$UseFinishHook=0
 $FinishEmail=0
 
 #Email for failure_hook and finish_hook
@@ -47,3 +48,6 @@ $DBConn = New-Object System.Data.Odbc.OdbcConnection;
 $DBConn.ConnectionString = $DBConnectionString;
 
 $OneDriveLocation = 'C:\Users\Whapow\Desktop\PowerShell\DAPr_CSV\OneDrive\Documents'
+    #if ( -Not (Test-Path -Path "$($OneDriveLocation)\$($Server)\")){
+    #    New-Item "$($OneDriveLocation)\$($Server)" -ItemType Directory 
+    #}
