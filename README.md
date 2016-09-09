@@ -12,15 +12,21 @@ This is **dangerous** for Production Machines as any Powershell script can run
 - Run `PowerShell` as Administrator
 - `Set-ExecutionPolicy Unrestricted`
 - Navigate to `CSVDownloadAndProcess`
-- Edit `./config/config.ps1` change `$ProcessPath=".\bin\Win32ConsoleApplication.exe"` to your custom executable.
-- Run the script, `powershell -file .\DAPr-CSV.ps1`
+- Create a `./config/config.ps1` with the information below. 
+  - Change `$ProcessPath=".\bin\Win32ConsoleApplication.exe"` to your custom executable
+  - Do the same for `$FinishPath` and `$FailurePath`, if necessary.
+- Run the script with `powershell.exe .\DAPr-CSV.ps1`
 
 ### config.ps1
 ```powershell
 $ErrorActionPreference = "Stop"
 $User= Import-CSV .\credentials\*.csv
-$Bucket="edn-production"
 $Region="us-east-1"
+
+if (-Not (Test-Path -Path ".\credentials\ReportingEmail.txt")){
+    Write-Host "Please enter a password for the reporting email." -ForegroundColor Cyan
+    Read-Host -AsSecureString | ConvertFrom-SecureString | Out-File ".\credentials\ReportingEmail.txt"
+}
 
 # replace the sample fields in the below information with the correct values
 $ServerList="service.edatanow.com" #separate desired servers with a comma
@@ -28,17 +34,23 @@ $Language="en"
 $ProcessPath=".\bin\Win32ConsoleApplication.exe"
 $FailurePath=".\bin\Failure.exe"
 $UseFailureHook=0
-$FinishPath=".\bin\Finish.exe"
+$FailureEmail=0
+$FinishPath=".\Upload-CSV.ps1"
 $UseFinishHook=0
+$FinishEmail=0
 
 #Email for failure_hook
-$From = "user@domain.com"
-$To = "dapr.noreply@gmail.com"
-$Cc = "YourBoss@YourDomain.com"
-$Subject = "Email Subject"
-$Body = "Insert body text here"
-$SMTPServer = "smtp.gmail.com"
-$SMTPPort = "587"
+$To="recipient@email.com"
+$From="reportsource@email.com"
+$Cc="YourBoss@YourDomain.com"
+$FailSubject="Email Subject"
+$FinishSubject="Email Subject"
+$FailBody="Insert Failure body text here"
+$FinishBody="Insert Finish body text here"
+$EmailPassword= Get-Content ".\credentials\ReportingEmail.txt" | ConvertTo-SecureString
+$EmailSender= New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $From, $EmailPassword
+$SMTPServer="smtp.gmail.com"
+$SMTPPort="587"
 ```
 ### Hook-Process.ps1
 
