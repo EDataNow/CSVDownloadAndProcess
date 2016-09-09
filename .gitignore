@@ -1,5 +1,6 @@
 /bin/
-/config/
+*config.ps1
+*config/*
 *.DS_Store
 *.exe
 *.log
