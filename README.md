@@ -4,7 +4,7 @@
 ## Setup
 - PowerShell v3 or higher
 - AWS Tool for Windows PowerShell [(download)](http://aws.amazon.com/powershell/)
-- git clone git@github.com:EDataNow/CSVDownloadAndProcess.git
+- git clone https://github.com/EDataNow/DaPr-CSVDownloadAndProcessForPowerShell
 - Copy Credentials(IE: **50.csv**) into `./credentials`
 
 ## Developers Quick Start Setup
