@@ -1,4 +1,5 @@
 ﻿#requires -version 3
+Set-Location -Path $PSScriptRoot
 . .\config\config.ps1
 . .\Functions.ps1
 
