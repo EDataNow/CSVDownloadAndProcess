@@ -1,6 +1,7 @@
 ﻿#requires -version 3
-. .\config\config.ps1
-. .\Functions.ps1
+$BaseDirectory = $PSScriptRoot
+. $BaseDirectory\config\config.ps1
+. $BaseDirectory\Functions.ps1
 
 Check-AWSPresence
 Set-AWSCredentials -AccessKey $User."Access Key Id" -SecretKey $User."Secret Access Key" -StoreAs $User."User Name"
@@ -10,7 +11,7 @@ foreach ($Server in $ServerList){
     $KeyPrefix = "csv-export/v1/$Language/" 
     $RemoteCollection = Get-S3Object -BucketName $Bucket -KeyPrefix $KeyPrefix -ProfileName $User."User Name" -Region $Region | Where-Object { $_.size –ne 0 }
     Recreate-Folders
-    $LocalCollection = Get-ChildItem ".\servers\$($Server)\*" -Recurse
+    $LocalCollection = Get-ChildItem "$($BaseDirectory)\servers\$($Server)\*" -Recurse
     Check-Incoming
 
     Download-NewFiles -Bucket $Bucket
