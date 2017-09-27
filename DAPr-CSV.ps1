@@ -1,5 +1,6 @@
 ﻿#requires -version 3
 $BaseDirectory = $PSScriptRoot
+Set-Location -Path $PSScriptRoot
 . $BaseDirectory\config\config.ps1
 . $BaseDirectory\Functions.ps1
 

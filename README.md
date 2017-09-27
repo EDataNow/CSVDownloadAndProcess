@@ -13,29 +13,29 @@ This is **dangerous** for Production Machines as any Powershell script can run
 - `Set-ExecutionPolicy Unrestricted`
 - Navigate to `CSVDownloadAndProcess`
 - Create a `./config/config.ps1` with the information below. 
-  - Change `$ProcessPath=".\bin\Win32ConsoleApplication.exe"` to your custom executable
+  - Change `$ProcessPath="$($BaseDirectory)\bin\Win32ConsoleApplication.exe"` to your custom executable
   - Do the same for `$FinishPath` and `$FailurePath`, if necessary.
 - Run the script with `powershell.exe .\DAPr-CSV.ps1`
 
 ### config.ps1
 ```powershell
 $ErrorActionPreference = "Stop"
-$User= Import-CSV .\credentials\*.csv
+$User= Import-CSV $BaseDirectory\credentials\*.csv
 $Region="us-east-1"
 
-if (-Not (Test-Path -Path ".\credentials\ReportingEmail.txt")){
+if (-Not (Test-Path -Path "$($BaseDirectory)\credentials\ReportingEmail.txt")){
     Write-Host "Please enter a password for the reporting email." -ForegroundColor Cyan
-    Read-Host -AsSecureString | ConvertFrom-SecureString | Out-File ".\credentials\ReportingEmail.txt"
+    Read-Host -AsSecureString | ConvertFrom-SecureString | Out-File "$($BaseDirectory)\credentials\ReportingEmail.txt"
 }
 
 # replace the sample fields in the below information with the correct values
 $ServerList="service.edatanow.com" #separate desired servers with a comma
 $Language="en"
-$ProcessPath=".\bin\Win32ConsoleApplication.exe"
-$FailurePath=".\bin\Failure.exe"
+$ProcessPath="$($BaseDirectory)\bin\Win32ConsoleApplication.exe"
+$FailurePath="$($BaseDirectory)\bin\Failure.exe"
 $UseFailureHook=0
 $FailureEmail=0
-$FinishPath=".\Upload-CSV.ps1"
+$FinishPath="$($BaseDirectory)\Upload-CSV.ps1"
 $UseFinishHook=0
 $FinishEmail=0
 
@@ -47,7 +47,7 @@ $FailSubject="Email Subject"
 $FinishSubject="Email Subject"
 $FailBody="Insert Failure body text here"
 $FinishBody="Insert Finish body text here"
-$EmailPassword= Get-Content ".\credentials\ReportingEmail.txt" | ConvertTo-SecureString
+$EmailPassword= Get-Content "$($BaseDirectory)\credentials\ReportingEmail.txt" | ConvertTo-SecureString
 $EmailSender= New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $From, $EmailPassword
 $SMTPServer="smtp.gmail.com"
 $SMTPPort="587"
@@ -71,8 +71,8 @@ The PowerShell script will pass 3 arguments to the executable that you may find 
 `./Win32ConsoleApplication/` contains a sample custom application.
 
 ## Resetting the Script
-- Delete anything from `./servers/{server-name}/Processed` and it will be redownloaded.
-- Deleting all of `./servers/` content will force the script to redownload everything.
+- Delete anything from `$($BaseDirectory)/servers/{server-name}/Processed` and it will be redownloaded.
+- Deleting all of `$($BaseDirectory)/servers/` content will force the script to redownload everything.
 
 ## config/Config.ps1
 - `ServerList` - servers you wish to pull .scv files from, separated by a comma
