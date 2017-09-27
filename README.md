@@ -68,7 +68,8 @@ The PowerShell script will pass 3 arguments to the executable that you may find 
 - Server Name, ``service.edatanow.com``
 - Language
 
-`./bin/` contains a sample custom application.
+`./Win32ConsoleApplication/` contains a sample custom application that will build itself into the `$(BaseDirectory)/bin/` folder when run. This directory is never touched during updates, and so the script can be freely modified or replaced. 
+**NOTE:** The powershell script will halt at the Processing stage if no application is defined.
 
 ## Resetting the Script
 - Delete anything from `$($BaseDirectory)/servers/{server-name}/Processed` and it will be redownloaded.
