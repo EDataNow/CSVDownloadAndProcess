@@ -68,7 +68,7 @@ The PowerShell script will pass 3 arguments to the executable that you may find 
 - Server Name, ``service.edatanow.com``
 - Language
 
-`./Win32ConsoleApplication/` contains a sample custom application.
+`./bin/` contains a sample custom application.
 
 ## Resetting the Script
 - Delete anything from `$($BaseDirectory)/servers/{server-name}/Processed` and it will be redownloaded.
