@@ -32,7 +32,7 @@ catch {}
 
 #"Starting {0} @ {1}" -f "AddToTempTable", (Get-Date) | Write-Host -ForegroundColor Cyan
 $AddToTempTable = $DBConn.CreateCommand();
-$AddToTempTable.CommandText = "BULK INSERT {0} FROM '{1}' WITH (FIRSTROW=2,FIELDTERMINATOR = ',', ROWTERMINATOR = '\n')" -f $TempCopier, $CSVPath
+$AddToTempTable.CommandText = "BULK INSERT {0} FROM '{1}' WITH (FIRSTROW=2,FIELDTERMINATOR = ',', ROWTERMINATOR = '0x0a');" -f $TempCopier, $CSVPath
 $AddToTempTable.ExecuteNonQuery() | Out-Null
 
 # Possible move out to finish-hook
