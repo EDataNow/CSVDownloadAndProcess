@@ -1,4 +1,7 @@
-﻿param([string]$CSVPath, [string]$RemoteServer, [string]$Language)
+﻿##WARNING: THIS SCRIPT HAS BEEN FLAGGED AS NON-FUNCTIONAL
+
+<#
+param([string]$CSVPath, [string]$RemoteServer, [string]$Language)
 
 $Global:LASTEXITCODE = $null
 
@@ -50,3 +53,4 @@ $DropTempTable.ExecuteNonQuery() | Out-Null
 $DBConn.Close();
 "Stored {0} @ {1}" -f $FileName, (Get-Date) | Write-Host -ForegroundColor Cyan
 $Global:LASTEXITCODE = 0
+#>
