@@ -52,6 +52,21 @@ $EmailSender= New-Object -TypeName System.Management.Automation.PSCredential -Ar
 $SMTPServer="smtp.gmail.com"
 $SMTPPort="587"
 ```
+
+To use the included `Store-CSV_SQLServer.ps1` script to process the files into a local database, the `$ProcessPath` variable can be set to `$ProcessPath="$($BaseDirectory)\Store-CSV_SQLServer.ps1"`
+The following must also be added to the config.ps1 file:
+
+```
+#Database Connection
+$DBServer="SERVER_NAME"
+$Database="S_CSV"
+$DBUserID="username"
+$DBPassword="password"
+
+$DBConn = New-Object System.Data.SqlClient.SqlConnection
+$DBConn.ConnectionString = "Server=$DBServer;Database=$Database;User ID=$DBUserID;Password=$DBPassword"
+```
+
 ### Hook-Process.ps1
 
 ```powershell
