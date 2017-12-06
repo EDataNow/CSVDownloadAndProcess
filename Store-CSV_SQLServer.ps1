@@ -1,5 +1,5 @@
 ﻿param([string]$CSVPath, [string]$RemoteServer, [string]$Language)
-
+Import-Module $BaseDirectory\lib\Out-DataTable.psm1
 $Global:LASTEXITCODE = $null
 
 function Create-Table {
@@ -13,6 +13,21 @@ param([string]$TableName)
     $CreateTable.CommandText += "{0}, PRIMARY KEY(id));" -f ($NewColumns -join ', ')
     $CreateTable.ExecuteNonQuery() | Out-Null
 }
+function Update-Columns {
+param([string]$TableName)
+    foreach ($Column in ($Columns -split ',')) {
+        $AddColumn = $DBConn.CreateCommand();
+        $AddColumn.CommandText = "ALTER TABLE {0} ADD {1} varchar(255)" -f $TableName, $Column
+        try {$AddColumn.ExecuteNonQuery()}
+        catch {} 
+    }
+}
+function Drop-Table {
+param([string]$TableName)
+    $DropTempTable = $DBConn.CreateCommand();
+    $DropTempTable.CommandText = "DROP TABLE {0};" -f $TableName
+    $DropTempTable.ExecuteNonQuery() | Out-Null 
+}
 
 $DBConn.Open();
 
@@ -23,17 +38,19 @@ $Table = $FileName -replace( '(?:[^-]*-){3}|\.csv','') -replace('-','_')
 
 #"Starting {0} @ {1}" -f "CreateTable", (Get-Date) | Write-Host -ForegroundColor Cyan
 try {Create-Table $Table}
-catch {}
+catch { Update-Columns $Table}
 
 #"Starting {0} @ {1}" -f "CreateTempTable", (Get-Date) | Write-Host -ForegroundColor Cyan
-$TempCopier = '#temp'
+$TempCopier='TEMP'
 try {Create-Table $TempCopier}
-catch {}
+catch {
+    Drop-Table $TempCopier
+    Create-Table $TempCopier
+}
 
 #"Starting {0} @ {1}" -f "AddToTempTable", (Get-Date) | Write-Host -ForegroundColor Cyan
-$AddToTempTable = $DBConn.CreateCommand();
-$AddToTempTable.CommandText = "BULK INSERT {0} FROM '{1}' WITH (FIRSTROW=2,FIELDTERMINATOR = ',', ROWTERMINATOR = '0x0a');" -f $TempCopier, $CSVPath
-$AddToTempTable.ExecuteNonQuery() | Out-Null
+$sqlBulkCopy = New-Object (“Data.SqlClient.SqlBulkCopy”) -ArgumentList $DBConn
+$sqlBulkCopy.DestinationTableName = $TempCopier 
 
 # Possible move out to finish-hook
 #"Starting {0} @ {1}" -f "MergeWithTable", (Get-Date) | Write-Host -ForegroundColor Cyan
@@ -54,9 +71,7 @@ WHEN NOT MATCHED THEN 
 $MergeWithTable.ExecuteNonQuery() | Out-Null
 
 #"Starting {0} @ {1}" -f "DropTempTable", (Get-Date) | Write-Host -ForegroundColor Cyan
-$DropTempTable = $DBConn.CreateCommand();
-$DropTempTable.CommandText = "DROP TABLE {0};" -f $TempCopier
-$DropTempTable.ExecuteNonQuery() | Out-Null
+Drop-Table $TempCopier
 
 $DBConn.Close();
 "Stored {0} @ {1}" -f $FileName, (Get-Date) | Write-Host -ForegroundColor Cyan
