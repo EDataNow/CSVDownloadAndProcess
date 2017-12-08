@@ -5,7 +5,7 @@
 - PowerShell v3 or higher
 - AWS Tool for Windows PowerShell [(download)](http://aws.amazon.com/powershell/)
 - git clone https://github.com/EDataNow/DaPr-CSVDownloadAndProcessForPowerShell
-- Copy Credentials(IE: **50.csv**) into `./credentials`
+- Copy Credentials(IE: **3.csv**) into `./credentials`
 
 ## Developers Quick Start Setup
 This is **dangerous** for Production Machines as any Powershell script can run
