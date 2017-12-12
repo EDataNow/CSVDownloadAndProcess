@@ -36,10 +36,6 @@ $Columns = Get-Content $CSVPath -TotalCount 1
 $FileName = $CSVPath | Split-Path -leaf 
 $Table = $FileName -replace( '(?:[^-]*-){3}|\.csv','') -replace('-','_')
 
-#"Starting {0} @ {1}" -f "CreateTable", (Get-Date) | Write-Host -ForegroundColor Cyan
-try {Create-Table $Table}
-catch { Update-Columns $Table}
-
 #"Starting {0} @ {1}" -f "CreateTempTable", (Get-Date) | Write-Host -ForegroundColor Cyan
 $TempCopier='TEMP'
 try {Create-Table $TempCopier}
@@ -52,7 +48,6 @@ catch {
 $sqlBulkCopy = New-Object (“Data.SqlClient.SqlBulkCopy”) -ArgumentList $DBConn
 $sqlBulkCopy.DestinationTableName = $TempCopier 
 
-# Possible move out to finish-hook
 #"Starting {0} @ {1}" -f "MergeWithTable", (Get-Date) | Write-Host -ForegroundColor Cyan
 $MergeWithTable  = $DBConn.CreateCommand();
 
@@ -68,7 +63,14 @@ WHEN MATCHED THEN 
   UPDATE SET {3}
 WHEN NOT MATCHED THEN  
   INSERT ({2}) VALUES ({4});" -f $Table, $TempCopier, $Columns, $UpdateString, $InsertString
-$MergeWithTable.ExecuteNonQuery() | Out-Null
+
+try { $MergeWithTable.ExecuteNonQuery() | Out-Null }
+catch {
+    # "Caught" | Write-Host -ForegroundColor Yellow 
+    try {Create-Table $Table}
+    catch { Update-Columns $Table}
+    $MergeWithTable.ExecuteNonQuery() | Out-Null
+}
 
 #"Starting {0} @ {1}" -f "DropTempTable", (Get-Date) | Write-Host -ForegroundColor Cyan
 Drop-Table $TempCopier
