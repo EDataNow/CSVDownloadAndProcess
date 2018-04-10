@@ -1,4 +1,23 @@
-﻿param([string]$CSVPath, [string]$RemoteServer, [string]$Language)
+﻿#####Directory
+$BaseDirectory = $PSScriptRoot
+Set-Location -Path $PSScriptRoot
+
+#####config.ps1
+$DBServer="DESKTOP-58KTF71\SQLEXPRESS"
+$Database="T_CSV"
+$DBUserID="joshua"
+$DBPassword="password"
+
+$DBConn = New-Object System.Data.SqlClient.SqlConnection
+$DBConn.ConnectionString = "Server=$DBServer;Database=$Database;User ID=$DBUserID;Password=$DBPassword"
+
+#####Fake Params
+$Server = "service.edatanow.com"
+$rollUp = Get-ChildItem "$($BaseDirectory)\servers\$($Server)\Incoming\*" -Recurse | Sort-Object Name
+$CSVPath = $rollUp[0]
+
+#####Store-CSV_SQLServer.ps1
+#param([string]$CSVPath, [string]$RemoteServer, [string]$Language)
 Import-Module $BaseDirectory\lib\Out-DataTable.psm1
 $Global:LASTEXITCODE = $null
 
@@ -50,6 +69,7 @@ $sqlBulkCopy.DestinationTableName = $TempCopier
 $CSV = Import-Csv -Path $CSVPath | Out-DataTable
 $sqlBulkCopy.WriteToServer($CSV) | Out-Null
 
+
 #"Starting {0} @ {1}" -f "MergeWithTable", (Get-Date) | Write-Host -ForegroundColor Cyan
 $MergeWithTable  = $DBConn.CreateCommand();
 
@@ -66,17 +86,24 @@ WHEN MATCHED THEN 
 WHEN NOT MATCHED THEN  
   INSERT ({2}) VALUES ({4});" -f $Table, $TempCopier, $Columns, $UpdateString, $InsertString
 
-try { $MergeWithTable.ExecuteNonQuery() | Out-Null }
+try { 
+    $MergeWithTable.ExecuteNonQuery() | Out-Null 
+    "Stored {0} in {1} @ {2}" -f $FileName, $Table, (Get-Date) | Write-Host -ForegroundColor Cyan
+    }
 catch {
     # "Caught" | Write-Host -ForegroundColor Yellow 
     try {Create-Table $Table}
     catch { Update-Columns $Table}
     $MergeWithTable.ExecuteNonQuery() | Out-Null
+    "Stored {0} in {1} @ {2}" -f $FileName, $Table, (Get-Date) | Write-Host -ForegroundColor Cyan
 }
 
+#$Insert = $DBConn.CreateCommand();
+#$Insert.CommandText = "INSERT INTO {0} SELECT {1} FROM {2}" -f $Table, $Columns, $TempCopier
+#$Insert.ExecuteNonQuery() | Out-Null
+
 #"Starting {0} @ {1}" -f "DropTempTable", (Get-Date) | Write-Host -ForegroundColor Cyan
-Drop-Table $TempCopier
+Drop-Table $TempCopier 
 
 $DBConn.Close();
-"Stored {0} in {1} @ {2}" -f $FileName, $Table, (Get-Date) | Write-Host -ForegroundColor Cyan
 $Global:LASTEXITCODE = 0
