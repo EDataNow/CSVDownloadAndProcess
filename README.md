@@ -31,8 +31,8 @@ if (-Not (Test-Path -Path "$($BaseDirectory)\credentials\ReportingEmail.txt")){
 # replace the sample fields in the below information with the correct values
 $ServerList="service.edatanow.com" #separate desired servers with a comma
 $Language="en"
-$ProcessPath="$($BaseDirectory)\bin\Win32ConsoleApplication.exe"
-$FailurePath="$($BaseDirectory)\bin\Failure.exe"
+$ProcessPath="$($BaseDirectory)\Bin\Win32ConsoleApplication.exe"
+$FailurePath="$($BaseDirectory)\Bin\Failure.exe"
 $UseFailureHook=0
 $FailureEmail=0
 $FinishPath="$($BaseDirectory)\Upload-CSV.ps1"
