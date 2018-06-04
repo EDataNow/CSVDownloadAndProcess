@@ -57,6 +57,15 @@ To use the included `Store-CSV_SQLServer.ps1` script to process the files into a
 The following must also be added to the config.ps1 file:
 
 ```
+#Windows Authentication Database Connection
+$DBServer="SERVER_NAME"
+$Database="S_CSV"
+
+$DBConn = New-Object System.Data.SqlClient.SqlConnection
+$DBConn.ConnectionString = "Server=$DBServer;Database=$Database;Integrated Security=True"
+```
+or
+```
 #Database Connection
 $DBServer="SERVER_NAME"
 $Database="S_CSV"
