@@ -4,5 +4,6 @@
 *.DS_Store
 *.exe
 *.log
+/credentials/
 /OneDrive/
 /Win32ConsoleApplication/.vs/
