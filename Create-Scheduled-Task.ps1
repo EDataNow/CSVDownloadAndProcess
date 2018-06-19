@@ -1,12 +1,24 @@
-﻿$BaseDirectory = $PSScriptRoot
-$task = "GetDataFromBucket"
-$description = "Hourly CSV bucket pull and database update."
-$server= $env:computername
-$user= "derek"
-$pass= "nevermind"
-$filePath = "$($BaseDirectory)\Scheduled-Task.ps1"
+#requires -version 3
+$BaseDirectory = $PSScriptRoot
+Set-Location -Path $PSScriptRoot
+. $BaseDirectory\config\config.ps1
 
- #Create folder
+$TaskName = "EDataNow_CSV_Sync"
+$TaskDescription = "Hourly CSV bucket pull and update."
+$TaskAuthor = "E-Data Now"
+$TaskServer = $env:computername
+$TaskUsername = "Admin"
+$TaskFilePath = "$($BaseDirectory)\Scheduled-Task.ps1"
+
+if (!(Test-Path -Path "$($UserDirectory)ScheduledTask.txt")){
+    Write-Host "Please enter `"$($TaskUsername)'s`" password for the task setup." -ForegroundColor Cyan
+    Read-Host -AsSecureString | ConvertFrom-SecureString | Out-File "$($UserDirectory)ScheduledTask.txt"
+}
+$TaskPassword= Get-Content "$($UserDirectory)ScheduledTask.txt" | ConvertTo-SecureString
+$Credentials = New-Object System.Management.Automation.PSCredential -ArgumentList $TaskUsername, $TaskPassword
+$Password = $Credentials.GetNetworkCredential().Password 
+
+#Create folder
 $ScheduledTaskLogsDir = "$($BaseDirectory)\ScheduledTaskLogs"
 if(!(Test-Path -Path $ScheduledTaskLogsDir )){
     New-Item -ItemType directory -Path $ScheduledTaskLogsDir
@@ -17,25 +29,25 @@ $log =  "$($ScheduledTaskLogsDir)\log.log"
 if (!(Test-Path "$log"))
 {
    New-Item -path $ScheduledTaskLogsDir -name log.log -type "file"
-   Write-Host "Created new file and text content added"
+   Write-Host "Created new log file."
 }
 
-$option = New-ScheduledJobOption -RunElevated -RequireNetwork
 $nextHour = (Get-Date).AddHours(1).AddMinutes(-(Get-Date -UFormat "%M")+15).AddSeconds(-(Get-Date -UFormat "%S"))
 $argument = "-NoProfile -WindowStyle Hidden -command `"& '$($filePath)'`""
 $action = New-ScheduledTaskAction -Execute 'Powershell.exe' -Argument $argument
+$setting = New-ScheduledTaskSettingsSet -RunOnlyIfNetworkAvailable -StartWhenAvailable
 $trigger =  New-ScheduledTaskTrigger -Once -At $nextHour -RepetitionInterval (New-TimeSpan -Hours 1)
 
-Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $task -Description $description -User $user -Password $pass -RunLevel Highest 
+Register-ScheduledTask -Action $action -Trigger $trigger -Settings $setting -TaskName $TaskName -Description $TaskDescription -User $TaskUsername -Password $Password -RunLevel Highest
 
-function WaitOnScheduledTask($server = $(throw "Server is required."), $task = $(throw "Task is required."), $maxSeconds = 5000)
+function WaitOnScheduledTask($TaskServer = $(throw "Server is required."), $TaskName = $(throw "Task is required."), $maxSeconds = 5000)
 {
     $startTime = get-date
     $initialDelay = 3
     $intervalDelay = 10
-     
-    Write-Output "Starting task '$task' on '$server'. Please wait..."
-    schtasks /run /s $server /TN $task
+
+    Write-Output "Starting task '$TaskName' on '$TaskServer'. Please wait..."
+    schtasks /run /s $TaskServer /TN $TaskName
  
     # wait a tick before checking the first time, otherwise it may still be at ready, never transitioned to running
     Write-Output "One moment..."
@@ -48,15 +60,15 @@ function WaitOnScheduledTask($server = $(throw "Server is required."), $task = $
          
         # this whole csv thing is hacky but one workaround I found for server 2003
         $tempFile = Join-Path $env:temp "SchTasksTemp.csv"
-        schtasks /Query /FO CSV /s $server /TN $task /v > $tempFile
+        schtasks /Query /FO CSV /s $TaskServer /TN $TaskName /v > $tempFile
  
         $taskData = Import-Csv $tempFile
         $status = $taskData.Status
          
         if($status.tostring() -eq "Running")
         {
-            $status = ((get-date).ToString("hh:MM:ss tt") + " Still running '$task' on '$server'...")
-            Write-Progress -activity $task -status $status -percentComplete -1 #-currentOperation "Waiting for completion status"
+            $status = ((get-date).ToString("hh:MM:ss tt") + " Still running '$TaskName' on '$TaskServer'...")
+            Write-Progress -activity $TaskName -status $status -percentComplete -1 #-currentOperation "Waiting for completion status"
             Write-Output $status
         }
         else
@@ -77,12 +89,12 @@ function WaitOnScheduledTask($server = $(throw "Server is required."), $task = $
     if (-not $timeout)
     {
         $ts = New-TimeSpan $startTime $(get-date)
-        "Scheduled task '{0}' on '{1}' complete in {2:###} seconds" -f $task, $server, $ts.TotalSeconds
+        "Scheduled task '{0}' on '{1}' complete in {2:###} seconds" -f $TaskName, $TaskServer, $ts.TotalSeconds
     }
 }
-WaitOnScheduledTask $server $task
+WaitOnScheduledTask $TaskServer $TaskName
 
-$msg = "GetDataFromBucket ScheduledTask Job added at $(Get-Date): First backup sync's at $($nextHour)"
+$msg = "$($TaskName) ScheduledTask added at $(Get-Date) - First backup sync's at $($nextHour)"
 $msg | Out-File -filepath $log -Append
 Write-Output $msg
 
