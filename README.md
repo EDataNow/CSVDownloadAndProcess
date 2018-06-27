@@ -89,6 +89,27 @@ $DBConn.Credential = New-Object System.Data.SqlClient.SqlCredential($DBUserID,$D
 $DBConn.ConnectionString = "Server=$DBServer;Database=$Database"
 ```
 
+### Create-Scheduled-Task
+
+To use the included `Create-Scheduled-Task.ps1` script to process the files into a local database with a hourly task.
+The following must be added to the bottom of `config.ps1` file, before running `Create-Scheduled-Task.ps1`.
+```
+#Task Information
+$TaskName = "EDataNow_CSV_Sync"
+$TaskDescription = "Hourly CSV bucket pull and update."
+$TaskAuthor = "E-Data Now"
+$TaskServer = $env:computername
+$TaskUsername = "Admin"
+$TaskFilePath = "$($BaseDirectory)\Scheduled-Task.ps1"
+
+if (!(Test-Path -Path "$($UserDirectory)ScheduledTask.txt")){
+    Write-Host "Please enter `"$($TaskUsername)'s`" password for the task setup." -ForegroundColor Cyan
+    Read-Host -AsSecureString | ConvertFrom-SecureString | Out-File "$($UserDirectory)ScheduledTask.txt"
+}
+$TaskPassword= Get-Content "$($UserDirectory)ScheduledTask.txt" | ConvertTo-SecureString
+$Credentials = New-Object System.Management.Automation.PSCredential -ArgumentList $TaskUsername, $TaskPassword
+$Password = $Credentials.GetNetworkCredential().Password
+```
 ### Hook-Process.ps1
 
 ```powershell
