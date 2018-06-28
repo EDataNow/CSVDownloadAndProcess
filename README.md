@@ -23,9 +23,16 @@ $ErrorActionPreference = "Stop"
 $User= Import-CSV $BaseDirectory\credentials\*.csv
 $Region="us-east-1"
 
-if (-Not (Test-Path -Path "$($BaseDirectory)\credentials\ReportingEmail.txt")){
+$UserDirectory = "$($env:UserDomain)_$($env:UserName)" -replace '[<>:"/\\|?*]','-'
+$UserDirectory = "$($BaseDirectory)\credentials\$($UserDirectory)\"
+
+if(!(Test-Path -Path "$($UserDirectory )")){
+    New-Item -ItemType directory -Path "$($UserDirectory)"
+}
+
+if (!(Test-Path -Path "$($UserDirectory)ReportingEmail.txt")){
     Write-Host "Please enter a password for the reporting email." -ForegroundColor Cyan
-    Read-Host -AsSecureString | ConvertFrom-SecureString | Out-File "$($BaseDirectory)\credentials\ReportingEmail.txt"
+    Read-Host -AsSecureString | ConvertFrom-SecureString | Out-File "$($UserDirectory)ReportingEmail.txt"
 }
 
 # replace the sample fields in the below information with the correct values
@@ -47,7 +54,7 @@ $FailSubject="Email Subject"
 $FinishSubject="Email Subject"
 $FailBody="Insert Failure body text here"
 $FinishBody="Insert Finish body text here"
-$EmailPassword= Get-Content "$($BaseDirectory)\credentials\ReportingEmail.txt" | ConvertTo-SecureString
+$EmailPassword= Get-Content "$($UserDirectory)ReportingEmail.txt" | ConvertTo-SecureString
 $EmailSender= New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $From, $EmailPassword
 $SMTPServer="smtp.gmail.com"
 $SMTPPort="587"
@@ -67,15 +74,42 @@ $DBConn.ConnectionString = "Server=$DBServer;Database=$Database;Integrated Secur
 or
 ```
 #Database Connection
+if (!(Test-Path -Path "$($UserDirectory)SQLServer.txt")){
+    Write-Host "Please enter a password for the sql Server." -ForegroundColor Cyan
+    Read-Host -AsSecureString | ConvertFrom-SecureString | Out-File "$($UserDirectory)SQLServer.txt"
+}
 $DBServer="SERVER_NAME"
 $Database="S_CSV"
 $DBUserID="username"
-$DBPassword="password"
+$DBPassword= Get-Content "$($UserDirectory)SQLServer.txt" | ConvertTo-SecureString
+$DBPassword.MakeReadOnly()
 
 $DBConn = New-Object System.Data.SqlClient.SqlConnection
-$DBConn.ConnectionString = "Server=$DBServer;Database=$Database;User ID=$DBUserID;Password=$DBPassword"
+$DBConn.Credential = New-Object System.Data.SqlClient.SqlCredential($DBUserID,$DBPassword)
+$DBConn.ConnectionString = "Server=$DBServer;Database=$Database"
 ```
 
+### Create-Scheduled-Task
+
+To use the included `Create-Scheduled-Task.ps1` script to process the files into a local database with a hourly task.
+The following must be added to the bottom of `config.ps1` file, before running `Create-Scheduled-Task.ps1`.
+```
+#Task Information
+$TaskName = "EDataNow_CSV_Sync"
+$TaskDescription = "Hourly CSV bucket pull and update."
+$TaskAuthor = "E-Data Now"
+$TaskServer = $env:computername
+$TaskUsername = "Admin"
+$TaskFilePath = "$($BaseDirectory)\Scheduled-Task.ps1"
+
+if (!(Test-Path -Path "$($UserDirectory)ScheduledTask.txt")){
+    Write-Host "Please enter `"$($TaskUsername)'s`" password for the task setup." -ForegroundColor Cyan
+    Read-Host -AsSecureString | ConvertFrom-SecureString | Out-File "$($UserDirectory)ScheduledTask.txt"
+}
+$TaskPassword= Get-Content "$($UserDirectory)ScheduledTask.txt" | ConvertTo-SecureString
+$Credentials = New-Object System.Management.Automation.PSCredential -ArgumentList $TaskUsername, $TaskPassword
+$Password = $Credentials.GetNetworkCredential().Password
+```
 ### Hook-Process.ps1
 
 ```powershell
