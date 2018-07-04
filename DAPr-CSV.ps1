@@ -1,6 +1,20 @@
-﻿#requires -version 3
+﻿param([string]$EmailPassword = $null, [string]$DBPassword = $null)
+#requires -version 3
 $BaseDirectory = $PSScriptRoot
 Set-Location -Path $PSScriptRoot
+
+if ($DBPassword) {
+    ConvertTo-SecureString -String $DBPassword -AsPlainText -Force | ConvertFrom-SecureString | Out-File "$($UserDirectory)SQLServer.txt"
+    Remove-Variable DBPassword
+}
+else { Remove-Variable DBPassword }
+
+if ($EmailPassword) {
+    ConvertTo-SecureString -String $EmailPassword -AsPlainText -Force | ConvertFrom-SecureString | Out-File "$($UserDirectory)ReportingEmail.txt"
+    Remove-Variable EmailPassword
+}
+else { Remove-Variable EmailPassword }
+
 . $BaseDirectory\config\config.ps1
 . $BaseDirectory\Functions.ps1
 
