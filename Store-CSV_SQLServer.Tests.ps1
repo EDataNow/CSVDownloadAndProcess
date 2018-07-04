@@ -85,7 +85,7 @@ function Count-Number-Rows
   param
   (
     [string]$DBName = 'S_CSV',
-    [string]$TableName = 'test'
+    [string]$TableName = 'testing'
   )
 
     # Check to see if they included a schema, if not use dbo
@@ -104,6 +104,32 @@ function Count-Number-Rows
                             -Database $DBName `
                             -SuppressProviderContextWarning 
     return $result.RowsCount
+
+}
+
+function Get-First-Row {
+  param
+  (
+    [string]$DBName = 'S_CSV',
+    [string]$TableName = 'testing'
+  )
+
+    # Check to see if they included a schema, if not use dbo
+    if ($TableName.Contains('.'))
+    { $tbl = $TableName }
+    else
+    { $tbl = "dbo.$TableName" }
+    
+    $dbcmd = @"
+      SELECT TOP 1 *
+        FROM $TableName    
+"@
+    
+    $result = Invoke-Sqlcmd -Query $dbcmd `
+                            -ServerInstance $env:COMPUTERNAME `
+                            -Database $DBName `
+                            -SuppressProviderContextWarning 
+    return $result
 
 }
 
@@ -159,17 +185,24 @@ Describe 'Database Testing' {
             $(Count-Number-Rows $DBName $TableName) | Should Be 1
         }
 
-        It 'rows updated' {
-            #todo: testing that the row data is diffferent
-            Count-Number-Rows $DBName $TableName | Should be 1
-
-            Create-Temp-Table $TempCopier $Columns2
-            Temp-Table-Dump $TempCopier $CSVPath2 $DBConn
-
-            Merge-Tables $TableName $TempCopier $DBConn $Columns2
-
-            Count-Number-Rows $DBName $TempCopier | Should Be 2
-            Count-Number-Rows $DBName $TableName | Should Be 2
+        Context 'rows updated' {
+            It "Starting Data Vaild" {
+                $(Get-First-Row $DBName $TableName)[3] | Should be "data3"
+                $(Get-First-Row $DBName $TableName)[4] | Should be "data4"
+                Count-Number-Rows $DBName $TableName | Should be 1
+            }
+            It "processed" {
+                Create-Temp-Table $TempCopier $Columns2
+                Temp-Table-Dump $TempCopier $CSVPath2 $DBConn
+                Merge-Tables $TableName $TempCopier $DBConn $Columns2
+            }
+            
+            It "Ending Data Vaild" {
+                $(Get-First-Row $DBName $TableName)[3] | Should be "changed3"
+                $(Get-First-Row $DBName $TableName)[4] | Should be "changed4"
+                Count-Number-Rows $DBName $TempCopier | Should Be 2
+                Count-Number-Rows $DBName $TableName | Should Be 2
+            }
         }
 
         It "added columns" {

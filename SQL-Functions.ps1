@@ -18,19 +18,27 @@ param([string]$TableName, $Columns)
     }
 }
 function Temp-Table-Dump {
-param([string]$TempCopier, [string]$CSVPath, $DBConn)
+param([string]$TempCopier, [string]$CSVPath, $DBConn, $FileName)
     $sqlBulkCopy = New-Object (“Data.SqlClient.SqlBulkCopy”) -ArgumentList $DBConn
     $sqlBulkCopy.DestinationTableName = $TempCopier
     $CSV = Import-Csv -Path $CSVPath | Out-DataTable
     $sqlBulkCopy.WriteToServer($CSV) | Out-Null
+
+    $insertTableInfo  = $DBConn.CreateCommand();
+    $insertTableInfo.CommandText = "UPDATE {0} 
+        SET source_file = '{1}', date_time_inserted = '{2}'" -f $TempCopier, $FileName, (Get-Date)
+        
+    try { $insertTableInfo.ExecuteNonQuery() | Out-Null }
+    catch { }
 }
 function Update-Columns {
 param([string]$TableName, [string[]]$Columns)
     foreach ($Column in ($Columns -split ',')) {
         $AddColumn = $DBConn.CreateCommand();
         $AddColumn.CommandText = "ALTER TABLE {0} ADD {1} varchar(max)" -f $TableName, $Column
-        try {$AddColumn.ExecuteNonQuery()
-        write-host "'$Column' column has been added to the '$TableName' table."}
+        try {$AddColumn.ExecuteNonQuery() | Out-Null
+            #write-host "'$Column' column has been added to the '$TableName' table."
+        }
         catch { } 
     }
 }
@@ -54,10 +62,11 @@ param([string]$Table, [string]$TempCopier, $DBConn, $Columns)
     try { $MergeWithTable.ExecuteNonQuery() | Out-Null }
     catch { 
         #$Error[0] | Write-Host -ForegroundColor Yellow 
-        try {Create-Table $Table  $Columns}
+        try {Create-Table $Table $Columns}
         catch {
-        #$Error[0] | Write-Host -ForegroundColor Yellow 
-        Update-Columns $Table  $Columns}
+            #$Error[0] | Write-Host -ForegroundColor Yellow 
+            Update-Columns $Table $Columns
+        }
         $MergeWithTable.ExecuteNonQuery() | Out-Null
     }
 }
