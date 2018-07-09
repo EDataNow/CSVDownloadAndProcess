@@ -59,7 +59,15 @@ function Process-NewFiles {
             $applicationResult = &$processHook $currentFilePath $Server $Language 2>&1
             if ($LASTEXITCODE -ne 0) {throw $err}
         }
+        catch [System.Management.Automation.MethodInvocationException] {
+            $Error[0].Exception.Message.Split(':')[1] | Write-Host -ForegroundColor Yellow 
+            Write-Error "Error while processing file $($file.Name)" -ErrorAction Continue
+            &$failureHook $currentFilePath $err (Get-Date)
+            Break
+        }
         catch {
+            $Error[0] | Write-Host -ForegroundColor Yellow 
+            #$Error[0].exception.GetType().fullname | Write-Host -ForegroundColor Yellow 
             Write-Error "Error while processing file $($file.Name)" -ErrorAction Continue
             &$failureHook $currentFilePath $err (Get-Date)
             Break
