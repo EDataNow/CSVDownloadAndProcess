@@ -12,10 +12,10 @@ This is **dangerous** for Production Machines as any Powershell script can run
 - Run `PowerShell` as Administrator
 - `Set-ExecutionPolicy Unrestricted`
 - Navigate to `CSVDownloadAndProcess`
-- Create a `./config/config.ps1` with the information below. 
+- Create a `./config/config.ps1` with the information below.
   - Change `$ProcessPath="$($BaseDirectory)\bin\Win32ConsoleApplication.exe"` to your custom executable
   - Do the same for `$FinishPath` and `$FailurePath`, if necessary.
-- Run the script with `powershell.exe .\DAPr-CSV.ps1`
+- Run the script with `powershell.exe .\DAPr-CSV.ps1 -EmailPassword "password" -DBPassword "password"` variables each are optional. (replacing the "password" fields with yours)
 
 ### config.ps1
 ```powershell
@@ -61,7 +61,7 @@ $SMTPPort="587"
 ```
 
 To use the included `Store-CSV_SQLServer.ps1` script to process the files into a local database, the `$ProcessPath` variable can be set to `$ProcessPath="$($BaseDirectory)\Store-CSV_SQLServer.ps1"`
-The following must also be added to the config.ps1 file:
+The following must also be added and configured in the config.ps1 file:
 
 ```
 #Windows Authentication Database Connection
@@ -73,7 +73,7 @@ $DBConn.ConnectionString = "Server=$DBServer;Database=$Database;Integrated Secur
 ```
 or
 ```
-#Database Connection
+#SQLServer Authentication Database Connection
 if (!(Test-Path -Path "$($UserDirectory)SQLServer.txt")){
     Write-Host "Please enter a password for the sql Server." -ForegroundColor Cyan
     Read-Host -AsSecureString | ConvertFrom-SecureString | Out-File "$($UserDirectory)SQLServer.txt"

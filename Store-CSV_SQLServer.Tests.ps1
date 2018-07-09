@@ -135,9 +135,12 @@ function Get-First-Row {
 
 $BaseDirectory = $PSScriptRoot
 Set-Location -Path $PSScriptRoot
+. $BaseDirectory\Test-Functions.ps1
 . $BaseDirectory\config\config.ps1
 . $BaseDirectory\SQL-Functions.ps1
 Import-Module $BaseDirectory\lib\Out-DataTable.psm1
+
+Check-PesterPresence
 
 $DBName = 'S_CSV'
 $DBConn.Open();
