@@ -5,18 +5,15 @@ Set-Location -Path $PSScriptRoot
 
 if ($DBPassword) {
     ConvertTo-SecureString -String $DBPassword -AsPlainText -Force | ConvertFrom-SecureString | Out-File "$($UserDirectory)SQLServer.txt"
-    Remove-Variable DBPassword
 }
-else { Remove-Variable DBPassword }
-
 if ($EmailPassword) {
     ConvertTo-SecureString -String $EmailPassword -AsPlainText -Force | ConvertFrom-SecureString | Out-File "$($UserDirectory)ReportingEmail.txt"
-    Remove-Variable EmailPassword
 }
-else { Remove-Variable EmailPassword }
+Remove-Variable EmailPassword
+Remove-Variable DBPassword
 
-. $BaseDirectory\config\config.ps1
 . $BaseDirectory\Functions.ps1
+. $BaseDirectory\config\config.ps1
 
 Check-AWSPresence
 Set-AWSCredentials -AccessKey $User."Access Key Id" -SecretKey $User."Secret Access Key" -StoreAs $User."User Name"
