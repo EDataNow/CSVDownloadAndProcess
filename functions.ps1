@@ -10,6 +10,18 @@
     }
 }# ensure AWS is installed
 
+function Create-Directory-If-Doesnt-Exist {
+param([string]$Directory = $null)
+    if($Directory) {
+        if(!(Test-Path -Path "$($Directory )")){
+            New-Item -ItemType directory -Path "$($Directory)" | Out-Null
+        }
+    }
+    else {
+        Write-Host "Directory Required"
+        Break
+    }
+}
 function Check-Incoming {
     Get-ChildItem $BaseDirectory\servers\$($Server)\Incoming\ | ForEach {
         if (Test-Path -Path "$($BaseDirectory)\servers\$($Server)\Incoming\$($_.Name)\*"){
@@ -21,12 +33,14 @@ function Check-Incoming {
 
 function Recreate-Folders {
     ForEach ($folder in (Split-Path (Split-Path $remoteCollection.Key -Parent) -Leaf | Sort-Object | Get-Unique)){
-        if ( -Not (Test-Path -Path "$($BaseDirectory)\servers\$($Server)\Processed\$($folder)\")){
-            New-Item $BaseDirectory\servers\$($Server)\Processed\$($folder) -ItemType Directory 
-        }
-        if ( -Not (Test-Path -Path "$($BaseDirectory)\servers\$($Server)\Incoming\$($folder)\")){
-            New-Item $BaseDirectory\servers\$($Server)\Incoming\$($folder) -ItemType Directory 
-        }
+        Create-Directory-If-Doesnt-Exist -Directory "$($BaseDirectory)\servers\$($Server)\Processed\$($folder)"
+        #if ( -Not (Test-Path -Path "$($BaseDirectory)\servers\$($Server)\Processed\$($folder)\")){
+        #    New-Item $BaseDirectory\servers\$($Server)\Processed\$($folder) -ItemType Directory 
+        #}
+        Create-Directory-If-Doesnt-Exist -Directory "$($BaseDirectory)\servers\$($Server)\Incoming\$($folder)"
+        #if ( -Not (Test-Path -Path "$($BaseDirectory)\servers\$($Server)\Incoming\$($folder)\")){
+        #    New-Item $BaseDirectory\servers\$($Server)\Incoming\$($folder) -ItemType Directory 
+        #}
     }
 } # recreate  folders if absent
 
@@ -59,7 +73,21 @@ function Process-NewFiles {
             $applicationResult = &$processHook $currentFilePath $Server $Language 2>&1
             if ($LASTEXITCODE -ne 0) {throw $err}
         }
+        catch [System.Management.Automation.MethodInvocationException] {
+            if($Error[0].Exception.Message.Split(':')[1].Split('.')[0].Split('`"')[1].Split("`'")[0] -eq "Login failed for user ") {
+                "SQLServer: Login Failed." | Write-Host -ForegroundColor Yellow 
+            } elseif ($Error[0].Exception.Message.Split(':')[1].Split('.')[0].Split('`"')[1] -eq "Execution Timeout Expired") {
+                "SQLServer: Server Connection Timed out." | Write-Host -ForegroundColor Yellow
+            } else {
+                $Error[0] | Write-Host -ForegroundColor Yellow 
+            }
+            Write-Error "Error while processing file $($file.Name)" -ErrorAction Continue
+            &$failureHook $currentFilePath $err (Get-Date)
+            Break
+        }
         catch {
+            #$Error[0] | Write-Host -ForegroundColor Yellow 
+            #$Error[0].exception.GetType().fullname | Write-Host -ForegroundColor Yellow 
             Write-Error "Error while processing file $($file.Name)" -ErrorAction Continue
             &$failureHook $currentFilePath $err (Get-Date)
             Break
