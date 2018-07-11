@@ -1,4 +1,14 @@
-﻿param([string]$EmailPassword = $null, [string]$DBPassword = $null)
+﻿param(
+    [string]$EmailPassword = $null,
+    [string]$DBPassword = $null,
+    [string]$UserName = $null,
+    [string]$AccessKeyId = $null,
+    [string]$SecretAccessKey = $null,
+    [string]$ConsoleLoginLink = $null,
+    [string]$Region = $null,
+    [string]$Server = $null,
+    [string]$Language = $null,
+    [string]$Processor = $null)
 #requires -version 3
 $BaseDirectory = $PSScriptRoot
 Set-Location -Path $PSScriptRoot
@@ -9,8 +19,21 @@ if ($DBPassword) {
 if ($EmailPassword) {
     ConvertTo-SecureString -String $EmailPassword -AsPlainText -Force | ConvertFrom-SecureString | Out-File "$($UserDirectory)ReportingEmail.txt"
 }
-Remove-Variable EmailPassword
-Remove-Variable DBPassword
+
+if ($UserName -and $AccessKeyId -and $SecretAccessKey -and $ConsoleLoginLink) {
+    if (!$Region) { $Region = "us-east-1" }
+    if (!$Server) { $Server = "service.edatanow.com" }
+    if (!$Language) { $Language = "en" }
+    if (!$Processor) { $Processor = "./db_store.rb" }
+    "User Name,Access Key Id,Secret Access Key,Console Login Link,Region,Server,Language,Processor" | Out-File "$($BaseDirectory)\credentials\config.csv"
+    "$UserName,$AccessKeyId,$SecretAccessKey,$ConsoleLoginLink,$Region,$Server,$Language,$Processor" | Out-File "$($BaseDirectory)\credentials\config.csv" -Append
+}
+elseif ($UserName -or $AccessKeyId -or $SecretAccessKey -or $ConsoleLoginLink) {
+    Write-Error 'UserName, AccessKeyId, SecretAccessKey, and ConsoleLoginLink are Required Together.' -ErrorAction Continue
+    Break
+}
+
+Remove-Variable EmailPassword, DBPassword, UserName, AccessKeyId, SecretAccessKey, ConsoleLoginLink, Region, Server, Language, Processor
 
 . $BaseDirectory\Functions.ps1
 . $BaseDirectory\config\config.ps1
