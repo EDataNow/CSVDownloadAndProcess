@@ -15,7 +15,9 @@ This is **dangerous** for Production Machines as any Powershell script can run
 - Create a `./config/config.ps1` with the information below.
   - Change `$ProcessPath="$($BaseDirectory)\bin\Win32ConsoleApplication.exe"` to your custom executable
   - Do the same for `$FinishPath` and `$FailurePath`, if necessary.
-- Run the script with `powershell.exe .\DAPr-CSV.ps1 -EmailPassword "password" -DBPassword "password"` variables each are optional. (replacing the "password" fields with yours)
+- Run the script with `powershell.exe .\DAPr-CSV.ps1 -EmailPassword "your password" -DBPassword "your password"` params are optional.
+	- Optional Credentials params `-UserName "YOUR_USER_NAME" -AccessKeyId "YOUR_ACCESS_KEY_ID" -SecretAccessKey "YOUR_SECRET_ACCESS_KEY" -ConsoleLoginLink "YOUR_CONSOLE_LOGIN_LINK"`. If you use one Credentials variable, you must include them all.
+		- Additional Optional Credential params `-Region "us-east-1" -Server "service.edatanow.com" -Language "en" -Processor "./db_store.rb"` If not included uses defaults.
 
 ### config.ps1
 ```powershell
