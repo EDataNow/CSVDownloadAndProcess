@@ -13,6 +13,13 @@
 $BaseDirectory = $PSScriptRoot
 Set-Location -Path $PSScriptRoot
 
+. $BaseDirectory\Functions.ps1
+
+$UserDirectory = "$($env:UserDomain)_$($env:UserName)" -replace '[<>:"/\\|?*]','-'
+$UserDirectory = "$($BaseDirectory)\credentials\$($UserDirectory)\"
+
+Create-Directory-If-Doesnt-Exist -Directory $UserDirectory
+
 if ($DBPassword) {
     ConvertTo-SecureString -String $DBPassword -AsPlainText -Force | ConvertFrom-SecureString | Out-File "$($UserDirectory)SQLServer.txt"
 }
@@ -35,7 +42,6 @@ elseif ($UserName -or $AccessKeyId -or $SecretAccessKey -or $ConsoleLoginLink) {
 
 Remove-Variable EmailPassword, DBPassword, UserName, AccessKeyId, SecretAccessKey, ConsoleLoginLink, Region, Server, Language, Processor
 
-. $BaseDirectory\Functions.ps1
 . $BaseDirectory\config\config.ps1
 
 Check-AWSPresence
