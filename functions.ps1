@@ -85,6 +85,21 @@ function Process-NewFiles {
             &$failureHook $currentFilePath $err (Get-Date)
             Break
         }
+        catch [System.Management.Automation.CommandNotFoundException] {
+            $cmdletFile = $Error[0].Exception.Message.Split("'")[1].Split("\")[-1]
+            if($cmdletFile -eq "Win32ConsoleApplication.exe") {
+                $filePath = $Error[0].Exception.Message.Split("'")[1]
+
+                Write-Error "$cmdletFile not found at $filePath" -ErrorAction Continue
+                &$failureHook $currentFilePath $err (Get-Date)
+                Break
+            }
+            else {
+                Write-Error "Error while processing file $($file.Name)" -ErrorAction Continue
+                &$failureHook $currentFilePath $err (Get-Date)
+                Break
+            }
+        }
         catch {
             #$Error[0] | Write-Host -ForegroundColor Yellow 
             #$Error[0].exception.GetType().fullname | Write-Host -ForegroundColor Yellow 
