@@ -10,6 +10,23 @@
     }
 }# ensure AWS is installed
 
+function Clean-Credentials {
+    $proj_files = Get-ChildItem -Path .\credentials\ -Filter *.csv -File -Name
+    if($proj_files.Length -gt 0) {
+        if(($proj_files.Length -gt 1) -or ($proj_files.Length -eq 1 -and $proj_files[0].Name -ne "config"))
+        {
+            ForEach ($file in $proj_files) {
+                $fileName = $file.Split(".")[0]
+                if($fileName -ne "config") {
+                    $filenew = $fileName + ".oldcsv"
+                    Rename-Item -Path ".\credentials\$file" -NewName $filenew 
+                    "Renamed old credential '$fileName.csv' to '$filenew'." | Write-Host -ForegroundColor Yellow -ErrorAction Continue
+                }
+            }
+        }
+    }
+}
+
 function Create-Directory-If-Doesnt-Exist {
 param([string]$Directory = $null)
     if($Directory) {
@@ -75,13 +92,13 @@ function Process-NewFiles {
         }
         catch [System.Management.Automation.MethodInvocationException] {
             if($Error[0].Exception.Message.Split(':')[1].Split('.')[0].Split('`"')[1].Split("`'")[0] -eq "Login failed for user ") {
-                "SQLServer: Login Failed." | Write-Host -ForegroundColor Yellow 
+                "SQLServer: Login Failed." | Write-Host -ForegroundColor Yellow -ErrorAction Continue
             } elseif ($Error[0].Exception.Message.Split(':')[1].Split('.')[0].Split('`"')[1] -eq "Execution Timeout Expired") {
-                "SQLServer: Server Connection Timed out." | Write-Host -ForegroundColor Yellow
+                "SQLServer: Server Connection Timed out." | Write-Host -ForegroundColor Yellow -ErrorAction Continue
             } else {
-                $Error[0] | Write-Host -ForegroundColor Yellow 
+                $Error[0] | Write-Host -ForegroundColor Yellow -ErrorAction Continue
             }
-            Write-Error "Error while processing file $($file.Name)" -ErrorAction Continue
+            "Error while processing file $($file.Name)" | Write-Host -ForegroundColor Yellow -ErrorAction Continue
             &$failureHook $currentFilePath $err (Get-Date)
             Break
         }
@@ -90,12 +107,12 @@ function Process-NewFiles {
             if($cmdletFile -eq "Win32ConsoleApplication.exe") {
                 $filePath = $Error[0].Exception.Message.Split("'")[1]
 
-                Write-Error "$cmdletFile not found at $filePath" -ErrorAction Continue
+                "$cmdletFile not found at $filePath" | Write-Host -ForegroundColor Yellow -ErrorAction Continue
                 &$failureHook $currentFilePath $err (Get-Date)
                 Break
             }
             else {
-                Write-Error "Error while processing file $($file.Name)" -ErrorAction Continue
+                "Error while processing file $($file.Name)" | Write-Host -ForegroundColor Yellow -ErrorAction Continue
                 &$failureHook $currentFilePath $err (Get-Date)
                 Break
             }
@@ -103,7 +120,7 @@ function Process-NewFiles {
         catch {
             #$Error[0] | Write-Host -ForegroundColor Yellow 
             #$Error[0].exception.GetType().fullname | Write-Host -ForegroundColor Yellow 
-            Write-Error "Error while processing file $($file.Name)" -ErrorAction Continue
+            "Error while processing file $($file.Name)" | Write-Host -ForegroundColor Yellow -ErrorAction Continue
             &$failureHook $currentFilePath $err (Get-Date)
             Break
         }

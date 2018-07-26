@@ -188,24 +188,19 @@ Describe 'Database Testing' {
             $(Count-Number-Rows $DBName $TableName) | Should Be 1
         }
 
-        Context 'rows updated' {
-            It "Starting Data Vaild" {
-                $(Get-First-Row $DBName $TableName)[3] | Should be "data3"
-                $(Get-First-Row $DBName $TableName)[4] | Should be "data4"
-                Count-Number-Rows $DBName $TableName | Should be 1
-            }
-            It "processed" {
-                Create-Temp-Table $TempCopier $Columns2
-                Temp-Table-Dump $TempCopier $CSVPath2 $DBConn
-                Merge-Tables $TableName $TempCopier $DBConn $Columns2
-            }
-            
-            It "Ending Data Vaild" {
-                $(Get-First-Row $DBName $TableName)[3] | Should be "changed3"
-                $(Get-First-Row $DBName $TableName)[4] | Should be "changed4"
-                Count-Number-Rows $DBName $TempCopier | Should Be 2
-                Count-Number-Rows $DBName $TableName | Should Be 2
-            }
+        It 'rows updated' {
+            $(Get-First-Row $DBName $TableName)[3] | Should be "data3"
+            $(Get-First-Row $DBName $TableName)[4] | Should be "data4"
+            Count-Number-Rows $DBName $TableName | Should be 1
+
+            Create-Temp-Table $TempCopier $Columns2
+            Temp-Table-Dump $TempCopier $CSVPath2 $DBConn
+            Merge-Tables $TableName $TempCopier $DBConn $Columns2
+
+            $(Get-First-Row $DBName $TableName)[3] | Should be "changed3"
+            $(Get-First-Row $DBName $TableName)[4] | Should be "changed4"
+            Count-Number-Rows $DBName $TempCopier | Should Be 2
+            Count-Number-Rows $DBName $TableName | Should Be 2
         }
 
         It "added columns" {

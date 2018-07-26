@@ -4,15 +4,12 @@
     [string]$UserName = $null,
     [string]$AccessKeyId = $null,
     [string]$SecretAccessKey = $null,
-    [string]$ConsoleLoginLink = $null,
     [string]$Region = $null,
     [string]$Server = $null,
-    [string]$Language = $null,
-    [string]$Processor = $null)
+    [string]$Language = $null)
 #requires -version 3
 $BaseDirectory = $PSScriptRoot
 Set-Location -Path $PSScriptRoot
-
 . $BaseDirectory\Functions.ps1
 
 $UserDirectory = "$($env:UserDomain)_$($env:UserName)" -replace '[<>:"/\\|?*]','-'
@@ -27,20 +24,23 @@ if ($EmailPassword) {
     ConvertTo-SecureString -String $EmailPassword -AsPlainText -Force | ConvertFrom-SecureString | Out-File "$($UserDirectory)ReportingEmail.txt"
 }
 
-if ($UserName -and $AccessKeyId -and $SecretAccessKey -and $ConsoleLoginLink) {
+if ($UserName -and $AccessKeyId -and $SecretAccessKey) {
     if (!$Region) { $Region = "us-east-1" }
     if (!$Server) { $Server = "service.edatanow.com" }
     if (!$Language) { $Language = "en" }
-    if (!$Processor) { $Processor = "./db_store.rb" }
-    "User Name,Access Key Id,Secret Access Key,Console Login Link,Region,Server,Language,Processor" | Out-File "$($BaseDirectory)\credentials\config.csv"
-    "$UserName,$AccessKeyId,$SecretAccessKey,$ConsoleLoginLink,$Region,$Server,$Language,$Processor" | Out-File "$($BaseDirectory)\credentials\config.csv" -Append
+
+    Clean-Credentials
+
+    "User Name,Access Key Id,Secret Access Key,Region,Server,Language" | Out-File "$($BaseDirectory)\credentials\config.csv"
+    "$UserName,$AccessKeyId,$SecretAccessKey,$Region,$Server,$Language" | Out-File "$($BaseDirectory)\credentials\config.csv" -Append
+
 }
-elseif ($UserName -or $AccessKeyId -or $SecretAccessKey -or $ConsoleLoginLink) {
-    Write-Error 'UserName, AccessKeyId, SecretAccessKey, and ConsoleLoginLink are Required Together.' -ErrorAction Continue
+elseif ($UserName -or $AccessKeyId -or $SecretAccessKey) {
+    'UserName, AccessKeyId, and SecretAccessKey are Required Together.' | Write-Host -ForegroundColor Yellow -ErrorAction Continue
     Break
 }
 
-Remove-Variable EmailPassword, DBPassword, UserName, AccessKeyId, SecretAccessKey, ConsoleLoginLink, Region, Server, Language, Processor
+Remove-Variable EmailPassword, DBPassword, UserName, AccessKeyId, SecretAccessKey, Region, Server, Language
 
 . $BaseDirectory\config\config.ps1
 
